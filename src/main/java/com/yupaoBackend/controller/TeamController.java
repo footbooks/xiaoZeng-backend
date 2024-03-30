@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/team")
 @Slf4j
+@CrossOrigin(allowCredentials = "true")
 public class TeamController {
     @Resource
     private UserService userService;

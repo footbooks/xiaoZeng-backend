@@ -29,6 +29,7 @@ import static com.yupaoBackend.contant.UserConstant.USER_LOGIN_STATE;
 @RestController
 @RequestMapping("/user")
 @Slf4j
+@CrossOrigin(allowCredentials = "true")
 public class UserController {
 
     @Autowired
