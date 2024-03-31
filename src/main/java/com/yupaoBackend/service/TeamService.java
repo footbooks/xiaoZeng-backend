@@ -5,10 +5,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupaoBackend.entity.User;
 import com.yupaoBackend.entity.request.TeamJoinRequest;
 import com.yupaoBackend.entity.request.TeamQuery;
+import com.yupaoBackend.entity.request.TeamQuitRequest;
 import com.yupaoBackend.entity.request.TeamUpdateRequest;
 import com.yupaoBackend.entity.vo.TeamUserVO;
-
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -22,20 +21,30 @@ import java.util.List;
 public interface TeamService extends IService<Team> {
     /**
      * 添加队伍
-     * @param team
-     * @param loginUser
-     * @return
      */
     long addTeam(Team team, User loginUser);
 
     /**
      * 查询队伍信息
-     * @param teamQuery
-     * @param isAdmin
      */
     List<TeamUserVO> listTeams(TeamQuery teamQuery, boolean isAdmin);
 
+    /**
+     * 修改队伍信息
+     */
     boolean updateTeam(TeamUpdateRequest teamUpdateRequest, User loginUser);
 
+    /**
+     * 加入队伍
+     */
     boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser);
+
+    /**
+     * 退出队伍
+     */
+    boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser);
+    /**
+     * 解散队伍
+     */
+    boolean deleteTeam(long id, User loginUser);
 }

@@ -8,10 +8,7 @@ import com.yupaoBackend.common.ResultUtils;
 import com.yupaoBackend.entity.Team;
 import com.yupaoBackend.entity.User;
 import com.yupaoBackend.entity.UserTeam;
-import com.yupaoBackend.entity.request.TeamAddRequest;
-import com.yupaoBackend.entity.request.TeamJoinRequest;
-import com.yupaoBackend.entity.request.TeamQuery;
-import com.yupaoBackend.entity.request.TeamUpdateRequest;
+import com.yupaoBackend.entity.request.*;
 import com.yupaoBackend.entity.vo.TeamUserVO;
 import com.yupaoBackend.exception.BusinessException;
 import com.yupaoBackend.service.TeamService;
@@ -39,6 +36,10 @@ public class TeamController {
     private TeamService teamService;
     @Resource
     private UserTeamService userTeamService;
+
+    /**
+     * 创建队伍
+     */
     @PostMapping("/add")
     public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest,HttpServletRequest request){
         if (teamAddRequest==null){
@@ -53,17 +54,26 @@ public class TeamController {
         }
         return ResultUtils.success(team.getId());
     }
+
+    /**
+     * 删除（解散）队伍
+     */
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(long teamId){
+    public BaseResponse<Boolean> deleteTeam(long teamId,HttpServletRequest request){
         if (teamId<=0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        boolean delete = teamService.removeById(teamId);
+        User loginUser = userService.getLoginUser(request);
+        boolean delete = teamService.deleteTeam(teamId,loginUser);
         if(!delete){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"删除失败");
         }
         return ResultUtils.success(true);
     }
+
+    /**
+     * 修改队伍信息
+     */
     @PostMapping("/update")
     public BaseResponse<Boolean> updateTeam(@RequestBody TeamUpdateRequest teamUpdateRequest,HttpServletRequest request){
         if(teamUpdateRequest==null){
@@ -77,17 +87,28 @@ public class TeamController {
         }
         return ResultUtils.success(true);
     }
+
+    /**
+     * 根据队伍id获取队伍信息
+     */
     @GetMapping("/get")
-    public BaseResponse<Team> getTeamById(long teamId){
+    public BaseResponse<Team> getTeamById(@RequestParam("id") long teamId){
         if (teamId<=0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Team team = teamService.getById(teamId);
+        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id",teamId);
+        Team team = teamService.getOne(queryWrapper);
         if (team==null){
             throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         return ResultUtils.success(team);
     }
+
+    /**
+     * 查询所有队伍信息
+
+     */
     @GetMapping("/list")
     public BaseResponse<List<TeamUserVO>> listTeams(TeamQuery teamQuery, HttpServletRequest request) {
         if (teamQuery == null) {
@@ -123,7 +144,9 @@ public class TeamController {
         return ResultUtils.success(teamList);
     }
 
-
+    /**
+     * 分页查询
+     */
     @GetMapping("/list/page")
     public BaseResponse<Page<Team>> listTeamsByPage(@RequestBody TeamQuery teamQuery){
         if (teamQuery==null){
@@ -140,6 +163,9 @@ public class TeamController {
         return ResultUtils.success(teamPage);
     }
 
+    /**
+     * 加入队伍
+     */
     @PostMapping("/join")
     public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinRequest teamJoinRequest, HttpServletRequest request){
         if (teamJoinRequest == null){
@@ -147,6 +173,19 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.joinTeam(teamJoinRequest,loginUser);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 退出队伍
+     */
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitRequest teamQuitRequest, HttpServletRequest request){
+        if (teamQuitRequest == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.quitTeam(teamQuitRequest,loginUser);
         return ResultUtils.success(result);
     }
 }
