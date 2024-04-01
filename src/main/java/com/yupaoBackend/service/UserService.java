@@ -69,4 +69,6 @@ public interface UserService extends IService<User> {
     //判断当前用户权限
     Boolean isAdmin(HttpServletRequest request);
     Boolean isAdmin(User loginUser);
+
+    List<User> matchUsers(long num, User user);
 }
