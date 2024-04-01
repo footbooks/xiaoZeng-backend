@@ -47,4 +47,5 @@ public interface TeamService extends IService<Team> {
      * 解散队伍
      */
     boolean deleteTeam(long id, User loginUser);
+
 }

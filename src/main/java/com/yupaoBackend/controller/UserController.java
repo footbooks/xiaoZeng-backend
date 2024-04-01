@@ -63,12 +63,12 @@ public class UserController {
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User user = userService.userLogin(userAccount, userPassword, request);
         return ResultUtils.success(user);

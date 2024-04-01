@@ -167,10 +167,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
                 statusEnum = TeamStatusEnum.PUBLIC;
             }
             //非管理员不允许查看私密队伍
-            if (!isAdmin && statusEnum.equals(TeamStatusEnum.PRIVATE)) {
+            if (!isAdmin && TeamStatusEnum.PRIVATE.equals(statusEnum)) {
                 throw new BusinessException(ErrorCode.NO_AUTH);
             }
-            queryWrapper.eq("status", statusEnum.getValue());
+            if (!isAdmin){
+                queryWrapper.eq("status", statusEnum.getValue());
+            }
         }
         // 不展示已过期的队伍
         // expireTime is null or expireTime > now()
@@ -356,6 +358,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         // 删除队伍
         return this.removeById(teamId);
     }
+
 
     /**
      * 根据 id 获取队伍信息
