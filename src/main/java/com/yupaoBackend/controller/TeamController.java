@@ -223,6 +223,7 @@ public class TeamController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
+        Boolean isAdmin = userService.isAdmin(request);
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", loginUser.getId());
         List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
@@ -238,7 +239,13 @@ public class TeamController {
                 .collect(Collectors.groupingBy(UserTeam::getTeamId));
         List<Long> idList = new ArrayList<>(listMap.keySet());
         teamQuery.setIdList(idList);
-        List<TeamUserVO> teamList = teamService.listTeams(teamQuery,true);
+        List<TeamUserVO> teamList = new ArrayList<>();
+        if(idList.size()<=0 && !isAdmin){
+            return ResultUtils.success(teamList);
+        }
+        teamList = teamService.listTeams(teamQuery,true);
+        //如果有返回值，统一设置属性为已加入
+        teamList.stream().peek(teamUserVO ->teamUserVO.setHasJoin(true)).collect(Collectors.toList());
         return ResultUtils.success(teamList);
     }
 
