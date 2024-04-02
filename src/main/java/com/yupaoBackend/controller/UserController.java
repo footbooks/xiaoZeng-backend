@@ -12,7 +12,6 @@ import com.yupaoBackend.exception.BusinessException;
 import com.yupaoBackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
@@ -32,7 +31,7 @@ import static com.yupaoBackend.contant.UserConstant.USER_LOGIN_STATE;
 @CrossOrigin(allowCredentials = "true")
 public class UserController {
 
-    @Autowired
+    @Resource
     private UserService userService;
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
@@ -103,8 +102,9 @@ public class UserController {
         return ResultUtils.success(safetyUser);
     }
 
-    // https://yupi.icu/
-
+    /**
+     * 搜索用户（管理员功能）
+     */
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
         if (!userService.isAdmin(request)) {
@@ -112,12 +112,17 @@ public class UserController {
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
-            queryWrapper.like("username", username);
+            queryWrapper.like("user_name", username);
         }
         List<User> userList = userService.list(queryWrapper);
+        //用户信息脱敏
         List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         return ResultUtils.success(list);
     }
+
+    /**
+     * 推荐页面，给用户推荐其他用户
+     */
     @GetMapping("/recommend")
     public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
@@ -141,7 +146,9 @@ public class UserController {
         return ResultUtils.success(userPage);
     }
 
-
+    /**
+     * 删除用户（管理员权限）
+     */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (!userService.isAdmin(request)) {
@@ -154,7 +161,9 @@ public class UserController {
         return ResultUtils.success(b);
     }
 
-
+    /**
+     * 根据标签搜索用户
+     */
     @GetMapping("/search/tags")
     public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagNameList){
         //参数验证
@@ -165,8 +174,10 @@ public class UserController {
         return ResultUtils.success(userList);
     }
 
+    /**
+     * 修改用户信息
+     */
     @PostMapping("/update")
-
     public BaseResponse<Integer> updateUser(@RequestBody User user,HttpServletRequest request){
         //参数验证
         if(user == null){
@@ -177,6 +188,10 @@ public class UserController {
         int result = userService.updateUser(user,loginUser);
         return ResultUtils.success(result);
     }
+
+    /**
+     * 心动模式（根据编辑距离算法给用户匹配相似度高的用户）
+     */
     @GetMapping("/match")
     public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
         if (num <= 0 || num > 20) {
