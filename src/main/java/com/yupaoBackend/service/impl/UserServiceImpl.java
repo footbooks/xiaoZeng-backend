@@ -292,8 +292,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         List<User> userList = this.list(queryWrapper);
         String tags = loginUser.getTags();
         Gson gson = new Gson();
-        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
-        }.getType());
+        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {}.getType());
         // 用户列表的下标 => 相似度
         List<Pair<User, Long>> list = new ArrayList<>();
         // 依次计算所有用户和当前用户的相似度
