@@ -59,6 +59,10 @@ public interface UserService extends IService<User> {
      */
     List<User> searchUsersByTags(List<String> tagList);
     /**
+     * 用户给自己新增标签
+     */
+    Boolean addUserTags(List<String> tagList,HttpServletRequest request);
+    /**
      * 修改用户信息
      */
     int updateUser(User user,User loginUser);

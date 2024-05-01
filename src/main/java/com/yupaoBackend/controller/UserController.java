@@ -173,6 +173,21 @@ public class UserController {
         List<User> userList = userService.searchUsersByTags(tagNameList);
         return ResultUtils.success(userList);
     }
+    /**
+     * 用户给自己新增标签
+     */
+    @PostMapping("/add/tags")
+    public BaseResponse<Boolean> addUserTags(@RequestParam(required = false)List<String> tagList,HttpServletRequest request){
+        //参数验证
+        if(CollectionUtils.isEmpty(tagList)){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        Boolean result = userService.addUserTags(tagList, request);
+        if(!result){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        return ResultUtils.success(result);
+    }
 
     /**
      * 修改用户信息

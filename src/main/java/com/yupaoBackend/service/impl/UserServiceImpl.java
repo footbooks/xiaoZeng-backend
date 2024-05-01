@@ -1,5 +1,6 @@
 package com.yupaoBackend.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
@@ -207,7 +208,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         List<User> users = userMapper.selectList(queryWrapper);
         //在内存中查找该标签（灵活）
         Gson gson = new Gson();
-        return users.stream().filter(user -> {
+        return users.stream()
+                .filter(user -> {
             String tagsStr = user.getTags();
             if (StringUtils.isBlank(tagsStr)){
                 return false;
@@ -220,11 +222,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 }
             }
             return true;
-        }).map(user -> {
+        })
+                //将安全用户信息返回
+                .map(user -> {
             User safetyUser = getSafetyUser(user);
             return safetyUser;
         }).collect(Collectors.toList());
 //        return users.stream().map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 用户新增标签
+     */
+    @Override
+    public Boolean addUserTags(List<String> tagList,HttpServletRequest request) {
+        //参数验证
+        if(CollectionUtils.isEmpty(tagList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //获取当前用户
+        User loginUser = this.getLoginUser(request);
+        if(loginUser==null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        //获取当前用户以有标签,与新增标签合并
+        String userOldTags = loginUser.getTags();
+        List<String> userTagSet = JSONUtil.toList(userOldTags, String.class);
+        userTagSet.addAll(tagList);
+        //将标签去重
+        List<String> userNewTagsList = userTagSet.stream().distinct().collect(Collectors.toList());
+        //转化为json保存
+        String userNewTagsStr = JSONUtil.toJsonStr(userNewTagsList);
+        loginUser.setTags(userNewTagsStr);
+        int result = userMapper.updateById(loginUser);
+        //将tagList集合转化为json形式
+        return result>0?Boolean.TRUE:Boolean.FALSE;
     }
 
     @Override
