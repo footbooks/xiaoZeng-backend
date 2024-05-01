@@ -3,6 +3,7 @@ package com.yupaoBackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yupaoBackend.entity.User;
+import com.yupaoBackend.entity.dto.UserConsumerQuery;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -76,4 +77,6 @@ public interface UserService extends IService<User> {
     Boolean isAdmin(User loginUser);
     //心动模式（根据编辑距离算法给用户推荐匹配度高的用户）
     List<User> matchUsers(long num, User user);
+    //根据账号查找用户信息
+    UserConsumerQuery getByAccount(String account);
 }

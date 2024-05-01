@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.yupaoBackend.common.ErrorCode;
 import com.yupaoBackend.entity.User;
+import com.yupaoBackend.entity.dto.UserConsumerQuery;
 import com.yupaoBackend.exception.BusinessException;
 import com.yupaoBackend.mapper.UserMapper;
 import com.yupaoBackend.service.UserService;
@@ -14,6 +15,7 @@ import com.yupaoBackend.utils.AlgorithmUtils;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -364,5 +366,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return finalUserList;
     }
 
+    /**
+     * 根据账户查找用户信息(管理员功能）
+     */
+    @Override
+    public UserConsumerQuery getByAccount(String account) {
+        if (StringUtils.isBlank(account)){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_account",account);
+        User user = this.getOne(queryWrapper);
+        if (user == null){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+        }
+        UserConsumerQuery consumerQuery = new UserConsumerQuery();
+        BeanUtils.copyProperties(user,consumerQuery);
+        return consumerQuery;
+    }
 
 }

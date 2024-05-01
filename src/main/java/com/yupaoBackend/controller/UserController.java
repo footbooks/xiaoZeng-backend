@@ -6,6 +6,7 @@ import com.yupaoBackend.common.BaseResponse;
 import com.yupaoBackend.common.ErrorCode;
 import com.yupaoBackend.common.ResultUtils;
 import com.yupaoBackend.entity.User;
+import com.yupaoBackend.entity.dto.UserConsumerQuery;
 import com.yupaoBackend.entity.request.UserLoginRequest;
 import com.yupaoBackend.entity.request.UserRegisterRequest;
 import com.yupaoBackend.exception.BusinessException;
@@ -216,5 +217,25 @@ public class UserController {
         return ResultUtils.success(userService.matchUsers(num, user));
     }
 
+    /**
+     * 根据账户查找用户
+     */
+    @GetMapping("/search/userAccount")
+    public BaseResponse<UserConsumerQuery> searchUserByUserAccount(@RequestBody String userAccount,HttpServletRequest request){
+        //参数验证
+        if (StringUtils.isEmpty(userAccount)){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        //权限校验
+        Boolean result = userService.isAdmin(request);
+        if(!result){
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        UserConsumerQuery consumerQuery = userService.getByAccount(userAccount);
+        if (consumerQuery==null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(consumerQuery);
+    }
 
 }
