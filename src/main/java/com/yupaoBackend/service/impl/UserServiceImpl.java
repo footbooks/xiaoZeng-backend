@@ -207,15 +207,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        }
         //先查询所有用户
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.isNotNull("tags");
         List<User> users = userMapper.selectList(queryWrapper);
         //在内存中查找该标签（灵活）
         Gson gson = new Gson();
         return users.stream()
                 .filter(user -> {
             String tagsStr = user.getTags();
-            if (StringUtils.isBlank(tagsStr)){
-                return false;
-            }
             Set<String> tagSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {}.getType());
             tagSet = Optional.ofNullable(tagSet).orElse(new HashSet<>());
             for(String tag : tagList){
@@ -325,8 +323,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.isNotNull("tags");
         List<User> userList = this.list(queryWrapper);
         String tags = loginUser.getTags();
-        Gson gson = new Gson();
-        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {}.getType());
+        List<String> tagList = JSONUtil.toList(tags, String.class);
+//        Gson gson = new Gson();
+//        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {}.getType());
         // 用户列表的下标 => 相似度
         List<Pair<User, Long>> list = new ArrayList<>();
         // 依次计算所有用户和当前用户的相似度
@@ -337,8 +336,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (StringUtils.isBlank(userTags) || user.getId() == loginUser.getId()) {
                 continue;
             }
-            List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
-            }.getType());
+            List<String> userTagList = JSONUtil.toList(userTags, String.class);
+//            List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
+//            }.getType());
             // 计算分数
             long distance = AlgorithmUtils.minDistance(tagList, userTagList);
             list.add(new Pair<>(user, distance));
